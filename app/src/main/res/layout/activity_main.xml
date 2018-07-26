@@ -53,16 +53,11 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.8" >
 
-        <android.support.design.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
         <com.drmmx.devmaks.androidvideoview.MyVideoView
             android:id="@+id/videoView1"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_constraintDimensionRatio="16:9" />
-        </android.support.design.card.MaterialCardView>
     </FrameLayout>
 
     <FrameLayout
@@ -79,18 +74,12 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.8">
 
-        <android.support.design.card.MaterialCardView
-            android:id="@+id/imageCardView1"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
         <ImageView
             android:id="@+id/imageVideo1"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
             android:src="@drawable/preview_image" />
-        </android.support.design.card.MaterialCardView>
     </FrameLayout>
 
     <FrameLayout
@@ -106,16 +95,11 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.8">
 
-        <android.support.design.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
             <com.drmmx.devmaks.androidvideoview.MyVideoView
                 android:id="@+id/videoView2"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 app:layout_constraintDimensionRatio="16:9"/>
-        </android.support.design.card.MaterialCardView>
 
     </FrameLayout>
 
@@ -133,18 +117,12 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.8">
 
-        <android.support.design.card.MaterialCardView
-            android:id="@+id/imageCardView2"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
         <ImageView
             android:id="@+id/imageVideo2"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
             android:src="@drawable/preview_image" />
-        </android.support.design.card.MaterialCardView>
     </FrameLayout>
 
 </android.support.constraint.ConstraintLayout>
