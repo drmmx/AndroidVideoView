@@ -7,6 +7,7 @@ import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -19,7 +20,7 @@ import android.widget.VideoView;
 import com.drmmx.devmaks.androidvideoview.database.Content;
 import com.drmmx.devmaks.androidvideoview.database.ContentDatabase;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     static final int VIDEO_REQUEST_BACKGROUND = 300;
     static final int VIDEO_REQUEST_1 = 301;
@@ -34,7 +35,6 @@ public class MainActivity extends AppCompatActivity {
     private MyVideoView mVideoViewBackground;
     private FrameLayout mFrameLayout1;
     private FrameLayout mFrameLayout2;
-    private FrameLayout mFrameLayoutBackground;
     private ImageView mBackgroundImage;
     private ImageView mImageVideo1;
     private ImageView mImageVideo2;
@@ -52,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
         mVideoViewBackground = findViewById(R.id.videoViewBackground);
         mFrameLayout1 = findViewById(R.id.frame1);
         mFrameLayout2 = findViewById(R.id.frame2);
-        mFrameLayoutBackground = findViewById(R.id.frameBackground);
         mBackgroundImage = findViewById(R.id.imageBackground);
         mImageVideo1 = findViewById(R.id.imageVideo1);
         mImageVideo2 = findViewById(R.id.imageVideo2);
@@ -92,25 +91,29 @@ public class MainActivity extends AppCompatActivity {
                 mp.setLooping(true);
             }
         });
+
+        //Click on video frame
+        mFrameLayout1.setOnClickListener(this);
+        mFrameLayout2.setOnClickListener(this);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == VIDEO_REQUEST_BACKGROUND) {
-            if (resultCode == RESULT_OK) {
+            if (resultCode == RESULT_OK && data != null) {
                 mVideoUriBackground = data.getData();
                 mBackgroundImage.setVisibility(View.GONE);
 //                mDatabase.mContentDao().getContent().setBackground(mVideoUriBackground.toString());
             }
         } else if (requestCode == VIDEO_REQUEST_1) {
-            if (resultCode == RESULT_OK) {
+            if (resultCode == RESULT_OK && data != null) {
                 mVideoUri1 = data.getData();
                 mImageVideo1.setVisibility(View.GONE);
 //                mDatabase.mContentDao().getContent().setFirstVideo(mVideoUri1.toString());
             }
         } else if (requestCode == VIDEO_REQUEST_2) {
-            if (resultCode == RESULT_OK) {
+            if (resultCode == RESULT_OK && data != null) {
                 mVideoUri2 = data.getData();
                 mImageVideo2.setVisibility(View.GONE);
 //                mDatabase.mContentDao().getContent().setSecondVideo(mVideoUri2.toString());
@@ -214,6 +217,28 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.frame1:
+                Intent firstIntent = new Intent(Intent.ACTION_VIEW);
+                firstIntent.setPackage("com.mxtech.videoplayer.ad");
+                firstIntent.setClassName( "com.mxtech.videoplayer.ad", "com.mxtech.videoplayer.ad.ActivityScreen" );
+                firstIntent.setData(Uri.parse(mContent.getFirstVideo()));
+                startActivity(firstIntent);
+                Log.d("MainActivity_", "onClick: " + mContent.getFirstVideo());
+                break;
+            case R.id.frame2:
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setPackage("com.mxtech.videoplayer.ad");
+                intent.setClassName( "com.mxtech.videoplayer.ad", "com.mxtech.videoplayer.ad.ActivityScreen" );
+                intent.setData(Uri.parse(mContent.getSecondVideo()));
+                Log.d("MainActivity_", "onClick: " + mContent.getSecondVideo());
+                startActivity(intent);
+                break;
         }
     }
 }
