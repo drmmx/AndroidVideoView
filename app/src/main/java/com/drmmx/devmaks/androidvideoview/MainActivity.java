@@ -1,5 +1,6 @@
 package com.drmmx.devmaks.androidvideoview;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -7,6 +8,9 @@ import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.view.menu.MenuBuilder;
+import android.support.v7.view.menu.MenuPopupHelper;
+import android.support.v7.widget.PopupMenu;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -38,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ImageView mBackgroundImage;
     private ImageView mImageVideo1;
     private ImageView mImageVideo2;
+    private ImageView mImagePopupMenu;
 
     private ContentDatabase mDatabase;
 
@@ -55,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBackgroundImage = findViewById(R.id.imageBackground);
         mImageVideo1 = findViewById(R.id.imageVideo1);
         mImageVideo2 = findViewById(R.id.imageVideo2);
+        mImagePopupMenu = findViewById(R.id.popupImageView);
 
         //Db init
         mDatabase = ContentDatabase.getInstance(this);
@@ -95,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //Click on video frame
         mFrameLayout1.setOnClickListener(this);
         mFrameLayout2.setOnClickListener(this);
+        mImagePopupMenu.setOnClickListener(this);
     }
 
     @Override
@@ -104,19 +111,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (resultCode == RESULT_OK && data != null) {
                 mVideoUriBackground = data.getData();
                 mBackgroundImage.setVisibility(View.GONE);
-//                mDatabase.mContentDao().getContent().setBackground(mVideoUriBackground.toString());
             }
         } else if (requestCode == VIDEO_REQUEST_1) {
             if (resultCode == RESULT_OK && data != null) {
                 mVideoUri1 = data.getData();
                 mImageVideo1.setVisibility(View.GONE);
-//                mDatabase.mContentDao().getContent().setFirstVideo(mVideoUri1.toString());
             }
         } else if (requestCode == VIDEO_REQUEST_2) {
             if (resultCode == RESULT_OK && data != null) {
                 mVideoUri2 = data.getData();
                 mImageVideo2.setVisibility(View.GONE);
-//                mDatabase.mContentDao().getContent().setSecondVideo(mVideoUri2.toString());
             }
         } else {
             Toast.makeText(this, "Error loading video", Toast.LENGTH_SHORT).show();
@@ -191,36 +195,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.backgroundMenu:
-                Intent backgroundIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                backgroundIntent.setType("video/*");
-                startActivityForResult(backgroundIntent, VIDEO_REQUEST_BACKGROUND);
-                return true;
-            case R.id.video1Menu:
-                Intent intent1 = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                intent1.setType("video/*");
-                startActivityForResult(intent1, VIDEO_REQUEST_1);
-                return true;
-            case R.id.video2Menu:
-                Intent intent2 = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                intent2.setType("video/*");
-                startActivityForResult(intent2, VIDEO_REQUEST_2);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.frame1:
@@ -239,6 +213,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.d("MainActivity_", "onClick: " + mContent.getSecondVideo());
                 startActivity(intent);
                 break;
+            case R.id.popupImageView:
+                showPopupMenu(view);
+                break;
         }
+    }
+
+    @SuppressLint("RestrictedApi")
+    private void showPopupMenu(View v) {
+
+        PopupMenu menu = new PopupMenu(v.getContext(), v);
+        menu.inflate(R.menu.popup_menu);
+        menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.backgroundMenu:
+                        Intent backgroundIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                        backgroundIntent.setType("video/*");
+                        startActivityForResult(backgroundIntent, VIDEO_REQUEST_BACKGROUND);
+                        break;
+                    case R.id.video1Menu:
+                        Intent intent1 = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                        intent1.setType("video/*");
+                        startActivityForResult(intent1, VIDEO_REQUEST_1);
+                        break;
+                    case R.id.video2Menu:
+                        Intent intent2 = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                        intent2.setType("video/*");
+                        startActivityForResult(intent2, VIDEO_REQUEST_2);
+                        break;
+                }
+                return true;
+            }
+        });
+        @SuppressLint("RestrictedApi")
+        MenuPopupHelper menuHelper = new MenuPopupHelper(v.getContext(), (MenuBuilder) menu.getMenu(), v);
+        menuHelper.show();
     }
 }

@@ -3,4 +3,5 @@
     <string name="background">Background Video</string>
     <string name="video_1">First Video</string>
     <string name="video_2">Second Video</string>
+    <string name="popup_main_menu">Main Menu</string>
 </resources>
