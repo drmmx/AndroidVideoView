@@ -2,6 +2,7 @@ package com.drmmx.devmaks.androidvideoview.database;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.PrimaryKey;
 import android.content.Context;
 import android.net.Uri;
@@ -58,11 +59,4 @@ public class Content {
     public void setSecondVideo(String secondVideo) {
         this.secondVideo = secondVideo;
     }
-/*    public static Content[] populateData(Context context) {
-        return new Content[] {
-                new Content(Uri.parse("android.resource://" + context.getPackageName() + "/raw/" + "background_video_2").toString(),
-                        Uri.parse("android.resource://" + context.getPackageName() + "/raw/" + "firebase_authentication").toString(),
-                        Uri.parse("android.resource://" + context.getPackageName() + "/raw/" + "introducing_firebase").toString())
-        };
-    }*/
 }

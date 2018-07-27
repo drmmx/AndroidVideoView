@@ -12,8 +12,6 @@ import android.support.v7.view.menu.MenuBuilder;
 import android.support.v7.view.menu.MenuPopupHelper;
 import android.support.v7.widget.PopupMenu;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -70,6 +68,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Uri.parse("android.resource://" + getPackageName() + "/raw/" + "firebase_authentication").toString(),
                     Uri.parse("android.resource://" + getPackageName() + "/raw/" + "introducing_firebase").toString());
             mDatabase.mContentDao().insert(mContent);
+            mVideoUriBackground = Uri.parse(mDatabase.mContentDao().getLastContent().getBackground());
+            mVideoUri1 = Uri.parse(mDatabase.mContentDao().getLastContent().getFirstVideo());
+            mVideoUri2 = Uri.parse(mDatabase.mContentDao().getLastContent().getSecondVideo());
         } else {
             mVideoUriBackground = Uri.parse(mDatabase.mContentDao().getLastContent().getBackground());
             mVideoUri1 = Uri.parse(mDatabase.mContentDao().getLastContent().getFirstVideo());
@@ -104,31 +105,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mImagePopupMenu.setOnClickListener(this);
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == VIDEO_REQUEST_BACKGROUND) {
-            if (resultCode == RESULT_OK && data != null) {
-                mVideoUriBackground = data.getData();
-                mBackgroundImage.setVisibility(View.GONE);
-            }
-        } else if (requestCode == VIDEO_REQUEST_1) {
-            if (resultCode == RESULT_OK && data != null) {
-                mVideoUri1 = data.getData();
-                mImageVideo1.setVisibility(View.GONE);
-            }
-        } else if (requestCode == VIDEO_REQUEST_2) {
-            if (resultCode == RESULT_OK && data != null) {
-                mVideoUri2 = data.getData();
-                mImageVideo2.setVisibility(View.GONE);
-            }
-        } else {
-            Toast.makeText(this, "Error loading video", Toast.LENGTH_SHORT).show();
-        }
-        mContent = new Content(mVideoUriBackground.toString(), mVideoUri1.toString(), mVideoUri2.toString());
-        mDatabase.mContentDao().insert(mContent);
-    }
-
 /*    private Uri getMedia(String mediaName) {
         return Uri.parse("android.resource://" + getPackageName() +
                 "/raw/" + mediaName);
@@ -145,16 +121,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mVideoViewBackground.start();
 
         if (mVideoUri1 == null) {
-            mVideoView1.setVideoPath(Uri.parse("android.resource://" + getPackageName() + "/raw/" + "introducing_firebase").toString());
+//            mVideoView1.setVideoPath(Uri.parse("android.resource://" + getPackageName() + "/raw/" + "introducing_firebase").toString());
             mImageVideo1.setVisibility(View.GONE);
         } else {
-            mVideoView1.setVideoPath(mDatabase.mContentDao().getLastContent().getFirstVideo());
+//            mVideoView1.setVideoPath(mDatabase.mContentDao().getLastContent().getFirstVideo());
             mImageVideo1.setVisibility(View.GONE);
         }
         mVideoView1.start();
 
         if (mVideoUri2 == null) {
-            mVideoView2.setVideoPath(Uri.parse("android.resource://" + getPackageName() + "/raw/" + "firebase_authentication").toString());
+//            mVideoView2.setVideoPath(Uri.parse("android.resource://" + getPackageName() + "/raw/" + "firebase_authentication").toString());
             mImageVideo2.setVisibility(View.GONE);
         } else {
             mVideoView2.setVideoPath(mDatabase.mContentDao().getLastContent().getSecondVideo());
@@ -172,21 +148,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onStart() {
         super.onStart();
-
         initializePlayer();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-
         releasePlayer();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             mVideoViewBackground.pause();
             mVideoView1.pause();
@@ -230,17 +203,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 switch (item.getItemId()) {
                     case R.id.backgroundMenu:
                         Intent backgroundIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                        backgroundIntent.setType("video/*");
+                        backgroundIntent.addCategory(Intent.CATEGORY_OPENABLE);
+                        backgroundIntent.setType("*/*");
                         startActivityForResult(backgroundIntent, VIDEO_REQUEST_BACKGROUND);
                         break;
                     case R.id.video1Menu:
                         Intent intent1 = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                        intent1.setType("video/*");
+                        intent1.addCategory(Intent.CATEGORY_OPENABLE);
+                        intent1.setType("*/*");
                         startActivityForResult(intent1, VIDEO_REQUEST_1);
                         break;
                     case R.id.video2Menu:
                         Intent intent2 = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                        intent2.setType("video/*");
+                        intent2.addCategory(Intent.CATEGORY_OPENABLE);
+                        intent2.setType("*/*");
                         startActivityForResult(intent2, VIDEO_REQUEST_2);
                         break;
                 }
@@ -250,5 +226,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @SuppressLint("RestrictedApi")
         MenuPopupHelper menuHelper = new MenuPopupHelper(v.getContext(), (MenuBuilder) menu.getMenu(), v);
         menuHelper.show();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == VIDEO_REQUEST_BACKGROUND) {
+            if (resultCode == RESULT_OK && data != null) {
+                mVideoUriBackground = data.getData();
+                mBackgroundImage.setVisibility(View.GONE);
+                mContent.setBackground(ImageFilePath.getPath(this, mVideoUriBackground));
+                mDatabase.mContentDao().update(mContent);
+            }
+        } else if (requestCode == VIDEO_REQUEST_1) {
+            if (resultCode == RESULT_OK && data != null) {
+                mVideoUri1 = data.getData();
+                mImageVideo1.setVisibility(View.GONE);
+                mContent.setFirstVideo(ImageFilePath.getPath(this, mVideoUri1));
+                mDatabase.mContentDao().update(mContent);
+            }
+        } else if (requestCode == VIDEO_REQUEST_2) {
+            if (resultCode == RESULT_OK && data != null) {
+                mVideoUri2 = data.getData();
+                mImageVideo2.setVisibility(View.GONE);
+                mContent.setSecondVideo(ImageFilePath.getPath(this, mVideoUri2));
+                mDatabase.mContentDao().update(mContent);
+            }
+        } else {
+            Toast.makeText(this, "Error loading video", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public String splitString (String str) {
+        if (str != null && str.length() > 0) {
+            str = str.substring(0, str.length() - 4);
+        }
+        return str;
     }
 }
