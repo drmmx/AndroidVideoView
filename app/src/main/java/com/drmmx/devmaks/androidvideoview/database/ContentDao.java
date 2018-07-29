@@ -27,9 +27,6 @@ public interface ContentDao {
     @Update
     void update(Content content);
 
-    @Insert
-    void insertAll(Content... contents);
-
     @Delete
     void delete(Content content);
 

@@ -20,7 +20,11 @@ public class Content {
 
     private String firstVideo;
 
+    private String firstPreview;
+
     private String secondVideo;
+
+    private String secondPreview;
 
     public Content(String background, String firstVideo, String secondVideo) {
         this.background = background;
@@ -58,5 +62,21 @@ public class Content {
 
     public void setSecondVideo(String secondVideo) {
         this.secondVideo = secondVideo;
+    }
+
+    public String getFirstPreview() {
+        return firstPreview;
+    }
+
+    public void setFirstPreview(String firstPreview) {
+        this.firstPreview = firstPreview;
+    }
+
+    public String getSecondPreview() {
+        return secondPreview;
+    }
+
+    public void setSecondPreview(String secondPreview) {
+        this.secondPreview = secondPreview;
     }
 }

@@ -16,7 +16,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.drmmx.devmaks.androidvideoview.database.Content;
@@ -35,12 +34,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private VideoView mVideoView1;
     private VideoView mVideoView2;
     private MyVideoView mVideoViewBackground;
-    private FrameLayout mFrameLayout1;
-    private FrameLayout mFrameLayout2;
     private ImageView mBackgroundImage;
     private ImageView mImageVideo1;
     private ImageView mImageVideo2;
-    private ImageView mImagePopupMenu;
 
     private ContentDatabase mDatabase;
 
@@ -53,12 +49,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mVideoView1 = findViewById(R.id.videoView1);
         mVideoView2 = findViewById(R.id.videoView2);
         mVideoViewBackground = findViewById(R.id.videoViewBackground);
-        mFrameLayout1 = findViewById(R.id.frame1);
-        mFrameLayout2 = findViewById(R.id.frame2);
+        FrameLayout frameLayout1 = findViewById(R.id.frame1);
+        FrameLayout frameLayout2 = findViewById(R.id.frame2);
         mBackgroundImage = findViewById(R.id.imageBackground);
         mImageVideo1 = findViewById(R.id.imageVideo1);
         mImageVideo2 = findViewById(R.id.imageVideo2);
-        mImagePopupMenu = findViewById(R.id.popupImageView);
+        ImageView imagePopupMenu = findViewById(R.id.popupImageView);
 
         //Db init
         mDatabase = ContentDatabase.getInstance(this);
@@ -99,20 +95,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-        //Click on video frame
-        mFrameLayout1.setOnClickListener(this);
-        mFrameLayout2.setOnClickListener(this);
-        mImagePopupMenu.setOnClickListener(this);
+        frameLayout1.setOnClickListener(this);
+        frameLayout2.setOnClickListener(this);
+        imagePopupMenu.setOnClickListener(this);
     }
-
-/*    private Uri getMedia(String mediaName) {
-        return Uri.parse("android.resource://" + getPackageName() +
-                "/raw/" + mediaName);
-    }*/
 
     private void initializePlayer() {
         if (mVideoUriBackground == null) {
-            mVideoViewBackground.setVideoPath(Uri.parse("android.resource://" + getPackageName() + "/raw/" + "background_video_2").toString());
+//            mVideoViewBackground.setVideoPath(Uri.parse("android.resource://" + getPackageName() + "/raw/" + "background_video_2").toString());
             mBackgroundImage.setVisibility(View.GONE);
         } else {
             mVideoViewBackground.setVideoPath(mDatabase.mContentDao().getLastContent().getBackground());
@@ -124,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //            mVideoView1.setVideoPath(Uri.parse("android.resource://" + getPackageName() + "/raw/" + "introducing_firebase").toString());
             mImageVideo1.setVisibility(View.GONE);
         } else {
-//            mVideoView1.setVideoPath(mDatabase.mContentDao().getLastContent().getFirstVideo());
+            mVideoView1.setVideoPath(mDatabase.mContentDao().getLastContent().getFirstVideo());
             mImageVideo1.setVisibility(View.GONE);
         }
         mVideoView1.start();
@@ -252,15 +242,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mContent.setSecondVideo(ImageFilePath.getPath(this, mVideoUri2));
                 mDatabase.mContentDao().update(mContent);
             }
-        } else {
-            Toast.makeText(this, "Error loading video", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    public String splitString (String str) {
-        if (str != null && str.length() > 0) {
-            str = str.substring(0, str.length() - 4);
-        }
-        return str;
     }
 }
