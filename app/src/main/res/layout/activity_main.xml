@@ -35,8 +35,7 @@
             android:id="@+id/imageBackground"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:src="@drawable/background" />
+            android:scaleType="centerCrop"/>
 
     </FrameLayout>
 
@@ -80,8 +79,7 @@
             android:id="@+id/imageVideo1"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:src="@drawable/preview_image" />
+            android:scaleType="centerCrop"/>
     </FrameLayout>
 
     <FrameLayout
@@ -123,8 +121,7 @@
             android:id="@+id/imageVideo2"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:src="@drawable/preview_image" />
+            android:scaleType="centerCrop" />
 
     </FrameLayout>
 

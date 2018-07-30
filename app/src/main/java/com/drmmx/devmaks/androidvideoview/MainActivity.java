@@ -71,11 +71,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mDatabase = ContentDatabase.getInstance(this);
         mContent = mDatabase.mContentDao().getLastContent();
         if (mContent == null) {
-            mContent = new Content(Uri.parse("android.resource://" + getPackageName() + "/raw/" + "background_video_2").toString(),
-                    Uri.parse("android.resource://" + getPackageName() + "/raw/" + "firebase_authentication").toString(),
-                    Uri.parse("android.resource://" + getPackageName() + "/raw/" + "introducing_firebase").toString(),
-                    Uri.parse("android.resource://" + getPackageName() + "/raw/" + "firebase_authentication").toString(),
-                    Uri.parse("android.resource://" + getPackageName() + "/raw/" + "introducing_firebase").toString());
+            mContent = new Content(Uri.parse("android.resource://" + getPackageName() + "/raw/" + "background_video").toString(),
+                    Uri.parse("android.resource://" + getPackageName() + "/raw/" + "preview").toString(),
+                    Uri.parse("android.resource://" + getPackageName() + "/raw/" + "preview").toString(),
+                    Uri.parse("android.resource://" + getPackageName() + "/raw/" + "preview").toString(),
+                    Uri.parse("android.resource://" + getPackageName() + "/raw/" + "preview").toString());
             mDatabase.mContentDao().insert(mContent);
             mVideoUriBackground = Uri.parse(mDatabase.mContentDao().getLastContent().getBackground());
             mVideoUri1 = Uri.parse(mDatabase.mContentDao().getLastContent().getFirstVideo());
@@ -310,7 +310,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String extension = MimeTypeMap.getFileExtensionFromUrl(filepath);
         String type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
         if (type != null) {
-            if (type.equals("image/jpeg") || type.equals("image/jpg") || type.equals("image/png") || type.equals("image/bmp")) {
+            if (type.equals("image/jpeg") || type.equals("image/jpg") || type.equals("image/png")
+                    || type.equals("image/bmp") || type.equals("image/webp")) {
                 type = "image";
                 return type;
             } else {
