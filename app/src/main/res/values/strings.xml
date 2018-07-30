@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">DVD Style</string>
-    <string name="background">Background Video</string>
-    <string name="video_1">First Video</string>
-    <string name="video_2">Second Video</string>
+    <string name="background">Background</string>
+    <string name="video_1">Media File #1</string>
+    <string name="video_2">Media File #1</string>
     <string name="popup_main_menu">Main Menu</string>
 </resources>

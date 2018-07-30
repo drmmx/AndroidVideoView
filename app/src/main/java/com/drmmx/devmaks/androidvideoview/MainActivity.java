@@ -2,9 +2,12 @@ package com.drmmx.devmaks.androidvideoview;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.media.MediaPlayer;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,12 +17,15 @@ import android.support.v7.widget.PopupMenu;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.drmmx.devmaks.androidvideoview.database.Content;
 import com.drmmx.devmaks.androidvideoview.database.ContentDatabase;
+import com.squareup.picasso.Picasso;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -31,6 +37,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Uri mVideoUriBackground;
     private Uri mVideoUri1;
     private Uri mVideoUri2;
+    private Uri mVideoUriPreview1;
+    private Uri mVideoUriPreview2;
     private VideoView mVideoView1;
     private VideoView mVideoView2;
     private MyVideoView mVideoViewBackground;
@@ -62,15 +70,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (mContent == null) {
             mContent = new Content(Uri.parse("android.resource://" + getPackageName() + "/raw/" + "background_video_2").toString(),
                     Uri.parse("android.resource://" + getPackageName() + "/raw/" + "firebase_authentication").toString(),
+                    Uri.parse("android.resource://" + getPackageName() + "/raw/" + "introducing_firebase").toString(),
+                    Uri.parse("android.resource://" + getPackageName() + "/raw/" + "firebase_authentication").toString(),
                     Uri.parse("android.resource://" + getPackageName() + "/raw/" + "introducing_firebase").toString());
             mDatabase.mContentDao().insert(mContent);
-            mVideoUriBackground = Uri.parse(mDatabase.mContentDao().getLastContent().getBackground());
-            mVideoUri1 = Uri.parse(mDatabase.mContentDao().getLastContent().getFirstVideo());
-            mVideoUri2 = Uri.parse(mDatabase.mContentDao().getLastContent().getSecondVideo());
         } else {
             mVideoUriBackground = Uri.parse(mDatabase.mContentDao().getLastContent().getBackground());
             mVideoUri1 = Uri.parse(mDatabase.mContentDao().getLastContent().getFirstVideo());
             mVideoUri2 = Uri.parse(mDatabase.mContentDao().getLastContent().getSecondVideo());
+            mVideoUriPreview1 = Uri.parse(mDatabase.mContentDao().getLastContent().getFirstPreview());
+            mVideoUriPreview2 = Uri.parse(mDatabase.mContentDao().getLastContent().getSecondPreview());
         }
 
         //MP settings
@@ -101,32 +110,45 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initializePlayer() {
+
         if (mVideoUriBackground == null) {
-//            mVideoViewBackground.setVideoPath(Uri.parse("android.resource://" + getPackageName() + "/raw/" + "background_video_2").toString());
-            mBackgroundImage.setVisibility(View.GONE);
+            mBackgroundImage.setVisibility(View.VISIBLE);
         } else {
-            mVideoViewBackground.setVideoPath(mDatabase.mContentDao().getLastContent().getBackground());
-            mBackgroundImage.setVisibility(View.GONE);
+            if (isImageType(MediaFilePath.getPath(this, mVideoUriBackground)).equals("image")) {
+                Picasso.get().load(mVideoUriBackground.toString()).into(mBackgroundImage);
+                mBackgroundImage.setVisibility(View.VISIBLE);
+            } else {
+                mVideoViewBackground.setVideoPath(mDatabase.mContentDao().getLastContent().getBackground());
+                mBackgroundImage.setVisibility(View.GONE);
+                mVideoViewBackground.start();
+            }
         }
-        mVideoViewBackground.start();
 
-        if (mVideoUri1 == null) {
-//            mVideoView1.setVideoPath(Uri.parse("android.resource://" + getPackageName() + "/raw/" + "introducing_firebase").toString());
-            mImageVideo1.setVisibility(View.GONE);
+        if (mVideoUriPreview1 == null) {
+            mImageVideo1.setVisibility(View.VISIBLE);
         } else {
-            mVideoView1.setVideoPath(mDatabase.mContentDao().getLastContent().getFirstVideo());
-            mImageVideo1.setVisibility(View.GONE);
+            if (isImageType(MediaFilePath.getPath(this, mVideoUriPreview1)).equals("image")) {
+                Picasso.get().load(mVideoUriPreview1.toString()).into(mImageVideo1);
+                mImageVideo1.setVisibility(View.VISIBLE);
+            } else {
+                mVideoView1.setVideoPath(mDatabase.mContentDao().getLastContent().getFirstPreview());
+                mImageVideo1.setVisibility(View.GONE);
+                mVideoView1.start();
+            }
         }
-        mVideoView1.start();
 
-        if (mVideoUri2 == null) {
-//            mVideoView2.setVideoPath(Uri.parse("android.resource://" + getPackageName() + "/raw/" + "firebase_authentication").toString());
-            mImageVideo2.setVisibility(View.GONE);
+        if (mVideoUriPreview2 == null) {
+            mImageVideo2.setVisibility(View.VISIBLE);
         } else {
-            mVideoView2.setVideoPath(mDatabase.mContentDao().getLastContent().getSecondVideo());
-            mImageVideo2.setVisibility(View.GONE);
+            if (isImageType(MediaFilePath.getPath(this, mVideoUriPreview2)).equals("image")) {
+                Picasso.get().load(mVideoUriPreview2.toString()).into(mImageVideo2);
+                mImageVideo2.setVisibility(View.VISIBLE);
+            } else {
+                mVideoView2.setVideoPath(mDatabase.mContentDao().getLastContent().getSecondPreview());
+                mImageVideo2.setVisibility(View.GONE);
+                mVideoView2.start();
+            }
         }
-        mVideoView2.start();
     }
 
     private void releasePlayer() {
@@ -161,20 +183,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.frame1:
-                Intent firstIntent = new Intent(Intent.ACTION_VIEW);
-                firstIntent.setPackage("com.mxtech.videoplayer.ad");
-                firstIntent.setClassName( "com.mxtech.videoplayer.ad", "com.mxtech.videoplayer.ad.ActivityScreen" );
-                firstIntent.setData(Uri.parse(mContent.getFirstVideo()));
-                startActivity(firstIntent);
-                Log.d("MainActivity_", "onClick: " + mContent.getFirstVideo());
+                if (!isImageType(MediaFilePath.getPath(this, mVideoUriPreview1)).equals("image")) {
+                    Intent firstIntent = new Intent(Intent.ACTION_VIEW);
+                    firstIntent.setPackage("com.mxtech.videoplayer.ad");
+                    firstIntent.setClassName("com.mxtech.videoplayer.ad", "com.mxtech.videoplayer.ad.ActivityScreen");
+                    firstIntent.setData(Uri.parse(mContent.getFirstVideo()));
+                    startActivity(firstIntent);
+                } else {
+                    Toast.makeText(this, "Please select Video file", Toast.LENGTH_SHORT).show();
+                }
                 break;
             case R.id.frame2:
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setPackage("com.mxtech.videoplayer.ad");
-                intent.setClassName( "com.mxtech.videoplayer.ad", "com.mxtech.videoplayer.ad.ActivityScreen" );
-                intent.setData(Uri.parse(mContent.getSecondVideo()));
-                Log.d("MainActivity_", "onClick: " + mContent.getSecondVideo());
-                startActivity(intent);
+                if (!isImageType(MediaFilePath.getPath(this, mVideoUriPreview2)).equals("image")) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setPackage("com.mxtech.videoplayer.ad");
+                    intent.setClassName("com.mxtech.videoplayer.ad", "com.mxtech.videoplayer.ad.ActivityScreen");
+                    intent.setData(Uri.parse(mContent.getSecondVideo()));
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(this, "Please select Video file", Toast.LENGTH_SHORT).show();
+                }
                 break;
             case R.id.popupImageView:
                 showPopupMenu(view);
@@ -225,23 +253,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (resultCode == RESULT_OK && data != null) {
                 mVideoUriBackground = data.getData();
                 mBackgroundImage.setVisibility(View.GONE);
-                mContent.setBackground(ImageFilePath.getPath(this, mVideoUriBackground));
+                mContent.setBackground(mVideoUriBackground.toString());
                 mDatabase.mContentDao().update(mContent);
             }
         } else if (requestCode == VIDEO_REQUEST_1) {
             if (resultCode == RESULT_OK && data != null) {
                 mVideoUri1 = data.getData();
+                mVideoUriPreview1 = data.getData();
                 mImageVideo1.setVisibility(View.GONE);
-                mContent.setFirstVideo(ImageFilePath.getPath(this, mVideoUri1));
+                mContent.setFirstVideo(MediaFilePath.getPath(this, mVideoUri1));
+                mContent.setFirstPreview(mVideoUriPreview1.toString());
                 mDatabase.mContentDao().update(mContent);
             }
         } else if (requestCode == VIDEO_REQUEST_2) {
             if (resultCode == RESULT_OK && data != null) {
                 mVideoUri2 = data.getData();
+                mVideoUriPreview2 = data.getData();
                 mImageVideo2.setVisibility(View.GONE);
-                mContent.setSecondVideo(ImageFilePath.getPath(this, mVideoUri2));
+                mContent.setSecondVideo(MediaFilePath.getPath(this, mVideoUri2));
+                mContent.setSecondPreview(mVideoUriPreview2.toString());
                 mDatabase.mContentDao().update(mContent);
             }
         }
+    }
+
+    private String isImageType(String filepath) {
+        String extension = MimeTypeMap.getFileExtensionFromUrl(filepath);
+        String type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+        if (type != null) {
+            if (type.equals("image/jpeg") || type.equals("image/jpg") || type.equals("image/png") || type.equals("image/bmp")) {
+                type = "image";
+                return type;
+            } else {
+                return type;
+            }
+        } else return "video";
     }
 }

@@ -26,10 +26,12 @@ public class Content {
 
     private String secondPreview;
 
-    public Content(String background, String firstVideo, String secondVideo) {
+    public Content(String background, String firstVideo, String secondVideo, String firstPreview, String secondPreview) {
         this.background = background;
         this.firstVideo = firstVideo;
         this.secondVideo = secondVideo;
+        this.firstPreview = firstPreview;
+        this.secondPreview = secondPreview;
     }
 
     public int getId() {

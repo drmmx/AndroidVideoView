@@ -13,7 +13,7 @@ import android.provider.MediaStore;
 /**
  * Created by dev3rema
  */
-public class ImageFilePath {
+public class MediaFilePath {
     @SuppressLint("NewApi")
     public static String getPath(final Context context, final Uri uri) {
         //check for KITKAT or above
