@@ -1,20 +1,18 @@
 package com.drmmx.devmaks.androidvideoview;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.media.MediaPlayer;
-import android.media.ThumbnailUtils;
 import android.net.Uri;
-import android.os.Build;
-import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.view.menu.MenuBuilder;
 import android.support.v7.view.menu.MenuPopupHelper;
 import android.support.v7.widget.PopupMenu;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.MimeTypeMap;
@@ -26,6 +24,8 @@ import android.widget.VideoView;
 import com.drmmx.devmaks.androidvideoview.database.Content;
 import com.drmmx.devmaks.androidvideoview.database.ContentDatabase;
 import com.squareup.picasso.Picasso;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -45,6 +45,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ImageView mBackgroundImage;
     private ImageView mImageVideo1;
     private ImageView mImageVideo2;
+    private int backgroundProgress;
+//    private int video1Progress;
+//    private int video2Progress;
 
     private ContentDatabase mDatabase;
 
@@ -74,6 +77,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Uri.parse("android.resource://" + getPackageName() + "/raw/" + "firebase_authentication").toString(),
                     Uri.parse("android.resource://" + getPackageName() + "/raw/" + "introducing_firebase").toString());
             mDatabase.mContentDao().insert(mContent);
+            mVideoUriBackground = Uri.parse(mDatabase.mContentDao().getLastContent().getBackground());
+            mVideoUri1 = Uri.parse(mDatabase.mContentDao().getLastContent().getFirstVideo());
+            mVideoUri2 = Uri.parse(mDatabase.mContentDao().getLastContent().getSecondVideo());
+            mVideoUriPreview1 = Uri.parse(mDatabase.mContentDao().getLastContent().getFirstPreview());
+            mVideoUriPreview2 = Uri.parse(mDatabase.mContentDao().getLastContent().getSecondPreview());
         } else {
             mVideoUriBackground = Uri.parse(mDatabase.mContentDao().getLastContent().getBackground());
             mVideoUri1 = Uri.parse(mDatabase.mContentDao().getLastContent().getFirstVideo());
@@ -100,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mVideoViewBackground.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
+                mp.setVolume(100, 100);
                 mp.setLooping(true);
             }
         });
@@ -107,48 +116,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         frameLayout1.setOnClickListener(this);
         frameLayout2.setOnClickListener(this);
         imagePopupMenu.setOnClickListener(this);
-    }
-
-    private void initializePlayer() {
-
-        if (mVideoUriBackground == null) {
-            mBackgroundImage.setVisibility(View.VISIBLE);
-        } else {
-            if (isImageType(MediaFilePath.getPath(this, mVideoUriBackground)).equals("image")) {
-                Picasso.get().load(mVideoUriBackground.toString()).into(mBackgroundImage);
-                mBackgroundImage.setVisibility(View.VISIBLE);
-            } else {
-                mVideoViewBackground.setVideoPath(mDatabase.mContentDao().getLastContent().getBackground());
-                mBackgroundImage.setVisibility(View.GONE);
-                mVideoViewBackground.start();
-            }
-        }
-
-        if (mVideoUriPreview1 == null) {
-            mImageVideo1.setVisibility(View.VISIBLE);
-        } else {
-            if (isImageType(MediaFilePath.getPath(this, mVideoUriPreview1)).equals("image")) {
-                Picasso.get().load(mVideoUriPreview1.toString()).into(mImageVideo1);
-                mImageVideo1.setVisibility(View.VISIBLE);
-            } else {
-                mVideoView1.setVideoPath(mDatabase.mContentDao().getLastContent().getFirstPreview());
-                mImageVideo1.setVisibility(View.GONE);
-                mVideoView1.start();
-            }
-        }
-
-        if (mVideoUriPreview2 == null) {
-            mImageVideo2.setVisibility(View.VISIBLE);
-        } else {
-            if (isImageType(MediaFilePath.getPath(this, mVideoUriPreview2)).equals("image")) {
-                Picasso.get().load(mVideoUriPreview2.toString()).into(mImageVideo2);
-                mImageVideo2.setVisibility(View.VISIBLE);
-            } else {
-                mVideoView2.setVideoPath(mDatabase.mContentDao().getLastContent().getSecondPreview());
-                mImageVideo2.setVisibility(View.GONE);
-                mVideoView2.start();
-            }
-        }
     }
 
     private void releasePlayer() {
@@ -172,10 +139,64 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onPause() {
         super.onPause();
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            mVideoViewBackground.pause();
-            mVideoView1.pause();
-            mVideoView2.pause();
+        backgroundProgress = mVideoViewBackground.getCurrentPosition();
+//        video1Progress = mVideoView1.getCurrentPosition();
+//        video2Progress = mVideoView2.getCurrentPosition();
+        mVideoViewBackground.pause();
+        mVideoView1.pause();
+        mVideoView2.pause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mVideoViewBackground.seekTo(backgroundProgress);
+//        mVideoView1.seekTo(video1Progress);
+//        mVideoView2.seekTo(video2Progress);
+        mVideoViewBackground.resume();
+        mVideoView1.resume();
+        mVideoView2.resume();
+    }
+
+    private void initializePlayer() {
+
+        if (mVideoUriBackground == null) {
+            mBackgroundImage.setVisibility(View.VISIBLE);
+        } else {
+            if (isImageType(MediaFilePath.getPath(this, mVideoUriBackground)).equals("image")) {
+                Picasso.get().load(mVideoUriBackground.toString()).into(mBackgroundImage);
+                mBackgroundImage.setVisibility(View.VISIBLE);
+            } else {
+                mVideoViewBackground.setVideoPath(mVideoUriBackground.toString());
+                mBackgroundImage.setVisibility(View.GONE);
+                mVideoViewBackground.start();
+            }
+        }
+
+        if (mVideoUriPreview1 == null) {
+            mImageVideo1.setVisibility(View.VISIBLE);
+        } else {
+            if (isImageType(MediaFilePath.getPath(this, mVideoUriPreview1)).equals("image")) {
+                Picasso.get().load(mVideoUriPreview1.toString()).into(mImageVideo1);
+                mImageVideo1.setVisibility(View.VISIBLE);
+            } else {
+                mVideoView1.setVideoPath(mVideoUriPreview1.toString());
+                mImageVideo1.setVisibility(View.GONE);
+                mVideoView1.start();
+            }
+        }
+
+        if (mVideoUriPreview2 == null) {
+            mImageVideo2.setVisibility(View.VISIBLE);
+        } else {
+            if (isImageType(MediaFilePath.getPath(this, mVideoUriPreview2)).equals("image")) {
+                Picasso.get().load(mVideoUriPreview2.toString()).into(mImageVideo2);
+                mImageVideo2.setVisibility(View.VISIBLE);
+            } else {
+                mVideoView2.setVideoPath(mVideoUriPreview2.toString());
+                mImageVideo2.setVisibility(View.GONE);
+                mVideoView2.start();
+            }
         }
     }
 
@@ -188,18 +209,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     firstIntent.setPackage("com.mxtech.videoplayer.ad");
                     firstIntent.setClassName("com.mxtech.videoplayer.ad", "com.mxtech.videoplayer.ad.ActivityScreen");
                     firstIntent.setData(Uri.parse(mContent.getFirstVideo()));
-                    startActivity(firstIntent);
+                    if (!isPackageInstalled(this,"com.mxtech.videoplayer.ad")) {
+                        Toast.makeText(this, "Please install MX Player", Toast.LENGTH_SHORT).show();
+                    } else {
+                        startActivity(firstIntent);
+                    }
                 } else {
                     Toast.makeText(this, "Please select Video file", Toast.LENGTH_SHORT).show();
                 }
                 break;
             case R.id.frame2:
                 if (!isImageType(MediaFilePath.getPath(this, mVideoUriPreview2)).equals("image")) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setPackage("com.mxtech.videoplayer.ad");
-                    intent.setClassName("com.mxtech.videoplayer.ad", "com.mxtech.videoplayer.ad.ActivityScreen");
-                    intent.setData(Uri.parse(mContent.getSecondVideo()));
-                    startActivity(intent);
+                    Intent secondIntent = new Intent(Intent.ACTION_VIEW);
+                    secondIntent.setPackage("com.mxtech.videoplayer.ad");
+                    secondIntent.setClassName("com.mxtech.videoplayer.ad", "com.mxtech.videoplayer.ad.ActivityScreen");
+                    secondIntent.setData(Uri.parse(mContent.getSecondVideo()));
+                    if (!isPackageInstalled(this,"com.mxtech.videoplayer.ad")) {
+                        Toast.makeText(this, "Please install MX Player", Toast.LENGTH_SHORT).show();
+                    } else {
+                        startActivity(secondIntent);
+                    }
                 } else {
                     Toast.makeText(this, "Please select Video file", Toast.LENGTH_SHORT).show();
                 }
@@ -288,5 +317,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return type;
             }
         } else return "video";
+    }
+
+    public static boolean isPackageInstalled(Context context, String packageName) {
+        final PackageManager packageManager = context.getPackageManager();
+        Intent intent = packageManager.getLaunchIntentForPackage(packageName);
+        if (intent == null) {
+            return false;
+        }
+        List<ResolveInfo> list = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+        return list.size() > 0;
     }
 }
